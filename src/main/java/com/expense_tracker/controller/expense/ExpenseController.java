@@ -80,8 +80,8 @@ public class ExpenseController {
         return response;
     }
 
-    @GetMapping("/summary")
-    public Response getSummaryReport(Authentication authentication){
+    @GetMapping("/expenseSummary")
+    public Response getExpenseSummaryReport(Authentication authentication){
         String email = authentication.getName();
         log.info("Summary Report for user: {}",email);
         ExpenseSummaryResponse summary = expenseService.getSummaryReport(email);
