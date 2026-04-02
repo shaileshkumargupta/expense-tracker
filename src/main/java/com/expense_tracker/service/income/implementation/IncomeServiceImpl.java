@@ -8,6 +8,7 @@ import com.expense_tracker.entity.expense.Expense;
 import com.expense_tracker.entity.income.Income;
 import com.expense_tracker.entity.user.User;
 import com.expense_tracker.exception.ExpenseNotFoundException;
+import com.expense_tracker.exception.IncomeNotFoundException;
 import com.expense_tracker.exception.UserNotFoundException;
 import com.expense_tracker.repository.income.IncomeRepository;
 import com.expense_tracker.repository.user.UserRepository;
@@ -72,7 +73,7 @@ public class IncomeServiceImpl implements IncomeService {
         User user = getUserByEmail(email);
 
         Income income = incomeRepository.findById(request.getId())
-                .orElseThrow(()-> new RuntimeException("Income not found"));
+                .orElseThrow(()-> new IncomeNotFoundException("Income not found"));
 
         if (!income.getUser().getId().equals(user.getId())){
             log.warn("Unauthorized update attempt by user: {}",email);
@@ -90,7 +91,7 @@ public class IncomeServiceImpl implements IncomeService {
         User user = getUserByEmail(email);
 
         Income income = incomeRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("Income not found."));
+                .orElseThrow(()->new IncomeNotFoundException("Income not found."));
 
         if (!income.getUser().getId().equals(user.getId())){
             log.warn("Unauthorized delete attempt by user: {}",email);

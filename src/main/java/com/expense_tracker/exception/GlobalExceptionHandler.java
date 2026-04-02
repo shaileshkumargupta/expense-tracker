@@ -35,6 +35,23 @@ public class GlobalExceptionHandler {
         return response;
     }
 
+    @ExceptionHandler(IncomeNotFoundException.class)
+    public Response handleBudgetNotFound(IncomeNotFoundException ex){
+        Response response = new Response();
+        response.setErrorResponse(404,ex.getMessage());
+        logger.warn("Income not found exception: {}",ex.getMessage(),ex);
+        return response;
+    }
+
+    @ExceptionHandler(BudgetNotFoundException.class)
+    public Response handleBudgetNotFound(BudgetNotFoundException ex){
+        Response response = new Response();
+        response.setErrorResponse(404,ex.getMessage());
+        logger.warn("Budget not found exception: {}",ex.getMessage(),ex);
+        return response;
+    }
+
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Response handleValidationException(MethodArgumentNotValidException ex){
         String errorMessage = ex.getBindingResult()
