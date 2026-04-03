@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +46,7 @@ public class IncomeServiceImpl implements IncomeService {
         income.setSource(request.getSource());
         income.setAmount(request.getAmount());
         income.setDescription(request.getDescription());
-        income.setDateTime(LocalDateTime.now());
+        income.setDateTime(request.getDateTime() != null ? request.getDateTime() : LocalDate.now());
         income.setUser(user);
 
         incomeRepository.save(income);
@@ -107,18 +108,18 @@ public class IncomeServiceImpl implements IncomeService {
         List<Income> incomes = incomeRepository.findByUser(user);
 
         double totalAmount = 0;
-        Map<String,Double> categoryMap = new HashMap<>();
+        Map<String,Double> sourceMap = new HashMap<>();
 
         for (Income income : incomes){
             totalAmount += income.getAmount();
-            categoryMap.put(income.getSource(),
-                    categoryMap.getOrDefault(income.getSource(),0.0)+ income.getAmount());
+            sourceMap.put(income.getSource(),
+                    sourceMap.getOrDefault(income.getSource(),0.0)+ income.getAmount());
         }
 
         IncomeSummaryResponse response = new IncomeSummaryResponse();
         response.setTotalAmount(totalAmount);
         response.setTotalTransaction(incomes.size());
-        response.setCategorySummary(categoryMap);
+        response.setSourceSummary(sourceMap);
 
         return response;
     }

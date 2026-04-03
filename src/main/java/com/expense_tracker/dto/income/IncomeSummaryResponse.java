@@ -8,5 +8,5 @@ import java.util.Map;
 public class IncomeSummaryResponse {
     private double totalAmount;
     private Integer totalTransaction;
-    private Map<String,Double> categorySummary;
+    private Map<String,Double> sourceSummary;
 }
