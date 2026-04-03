@@ -3,8 +3,10 @@ package com.expense_tracker.service.user.implementation;
 import com.expense_tracker.config.jwt.JwtUtil;
 import com.expense_tracker.dto.user.LoginRequest;
 import com.expense_tracker.dto.user.RegisterUserRequest;
+import com.expense_tracker.dto.user.UserSummary;
 import com.expense_tracker.entity.user.User;
 import com.expense_tracker.exception.UserAlreadyExistsException;
+import com.expense_tracker.exception.UserNotFoundException;
 import com.expense_tracker.repository.user.UserRepository;
 import com.expense_tracker.service.user.UserService;
 import org.slf4j.Logger;
@@ -57,5 +59,19 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Invalid password");
         }
         return jwtUtil.generateToken(user.getEmailId());
+    }
+
+    @Override
+    public UserSummary getUserProfile(String email) {
+        User user = userRepository.findByEmailId(email)
+                .orElseThrow(()-> new UserNotFoundException("User not found"));
+
+        UserSummary userSummary = new UserSummary();
+        userSummary.setUserId(user.getId());
+        userSummary.setName(user.getName());
+        userSummary.setEmail(user.getEmailId());
+        userSummary.setMobileNumber(user.getMobileNumber());
+
+        return userSummary;
     }
 }
