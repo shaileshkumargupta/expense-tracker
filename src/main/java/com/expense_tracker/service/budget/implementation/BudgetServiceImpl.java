@@ -48,7 +48,7 @@ public class BudgetServiceImpl implements BudgetService {
         budget.setAmount(request.getAmount());
         budget.setMonth(request.getMonth());
         budget.setYear(request.getYear());
-
+        budget.setUser(user);
         budgetRepository.save(budget);
     }
 

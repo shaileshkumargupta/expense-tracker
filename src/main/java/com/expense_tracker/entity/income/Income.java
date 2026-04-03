@@ -4,6 +4,7 @@ import com.expense_tracker.entity.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,7 +19,7 @@ public class Income {
 
     private Double amount;
 
-    private LocalDateTime dateTime;
+    private LocalDate dateTime;
 
     private String description;
 

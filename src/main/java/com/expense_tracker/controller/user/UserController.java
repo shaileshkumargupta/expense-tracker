@@ -44,9 +44,7 @@ public class UserController {
 
         Response response = new Response();
         response.setSuccessResponse();
-        Map<String,Object> data = new HashMap<>();
-        data.put("token",token);
-        response.setResponse(data);
+        response.setResponse(Map.of("token",token));
         log.info("Login user response: responseCode:{}, responseMessage:{}",response.getResponseCode(),response.getResponseMessage());
         return response;
     }
