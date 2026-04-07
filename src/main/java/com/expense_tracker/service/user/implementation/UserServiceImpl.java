@@ -3,8 +3,10 @@ package com.expense_tracker.service.user.implementation;
 import com.expense_tracker.config.jwt.JwtUtil;
 import com.expense_tracker.dto.user.LoginRequest;
 import com.expense_tracker.dto.user.RegisterUserRequest;
+import com.expense_tracker.dto.user.UserSummary;
 import com.expense_tracker.entity.user.User;
-import com.expense_tracker.exception.UserAlreadyExistsException;
+import com.expense_tracker.exception.ETMConstantMessages;
+import com.expense_tracker.exception.ETMException;
 import com.expense_tracker.repository.user.UserRepository;
 import com.expense_tracker.service.user.UserService;
 import org.slf4j.Logger;
@@ -35,7 +37,7 @@ public class UserServiceImpl implements UserService {
 
         if (userRepository.existsByEmailId(request.getEmailId())){
             log.warn("User already exists with email: {}",request.getEmailId());
-            throw new UserAlreadyExistsException("Email already exists!");
+            throw new ETMException(ETMConstantMessages.USER_ALREADY_EXISTS_CODE,ETMConstantMessages.USER_ALREADY_EXISTS);
         }
 
         User newUser = new User();
@@ -52,10 +54,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public String login(LoginRequest request) {
         User user = userRepository.findByEmailId(request.getEmailId())
-                .orElseThrow(()-> new RuntimeException("User not found"));
+                .orElseThrow(()-> new ETMException(ETMConstantMessages.USER_NOT_FOUND_CODE,ETMConstantMessages.USER_NOT_FOUND));
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())){
-            throw new RuntimeException("Invalid password");
+            throw new ETMException(ETMConstantMessages.INVALID_PASSWORD_CODE,ETMConstantMessages.INVALID_PASSWORD);
         }
         return jwtUtil.generateToken(user.getEmailId());
+    }
+
+    @Override
+    public UserSummary getUserProfile(String email) {
+        User user = userRepository.findByEmailId(email)
+                .orElseThrow(()-> new ETMException(ETMConstantMessages.USER_NOT_FOUND_CODE,ETMConstantMessages.USER_NOT_FOUND));
+
+        UserSummary userSummary = new UserSummary();
+        userSummary.setUserId(user.getId());
+        userSummary.setName(user.getName());
+        userSummary.setEmail(user.getEmailId());
+        userSummary.setMobileNumber(user.getMobileNumber());
+
+        return userSummary;
     }
 }

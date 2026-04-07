@@ -1,6 +1,6 @@
 package com.expense_tracker.controller.income;
 
-import com.expense_tracker.dto.Response;
+import com.expense_tracker.dto.common.Response;
 import com.expense_tracker.dto.income.IncomeRequest;
 import com.expense_tracker.dto.income.IncomeResponse;
 import com.expense_tracker.dto.income.IncomeSummaryResponse;

@@ -1,6 +1,5 @@
-package com.expense_tracker.dto;
+package com.expense_tracker.dto.common;
 
-import com.expense_tracker.dto.common.CommonResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Data;

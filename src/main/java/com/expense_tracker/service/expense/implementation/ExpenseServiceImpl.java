@@ -6,8 +6,8 @@ import com.expense_tracker.dto.expense.ExpenseSummaryResponse;
 import com.expense_tracker.dto.expense.UpdateExpenseRequest;
 import com.expense_tracker.entity.expense.Expense;
 import com.expense_tracker.entity.user.User;
-import com.expense_tracker.exception.ExpenseNotFoundException;
-import com.expense_tracker.exception.UserNotFoundException;
+import com.expense_tracker.exception.ETMConstantMessages;
+import com.expense_tracker.exception.ETMException;
 import com.expense_tracker.repository.expense.ExpenseRepository;
 import com.expense_tracker.repository.user.UserRepository;
 import com.expense_tracker.service.expense.ExpenseService;
@@ -32,7 +32,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     private User getUserByEmail(String email){
         return userRepository.findByEmailId(email)
-                .orElseThrow(()-> new UserNotFoundException("User not found."));
+                .orElseThrow(()-> new ETMException(ETMConstantMessages.USER_NOT_FOUND_CODE,ETMConstantMessages.USER_NOT_FOUND));
     }
 
     @Override
@@ -72,11 +72,11 @@ public class ExpenseServiceImpl implements ExpenseService {
         User user = getUserByEmail(email);
 
         Expense expense = expenseRepository.findById(request.getId())
-                .orElseThrow(()->new ExpenseNotFoundException("Expense not found."));
+                .orElseThrow(()->new ETMException(ETMConstantMessages.EXPENSE_NOT_FOUND_CODE,ETMConstantMessages.EXPENSE_NOT_FOUND));
 
         if (!expense.getUser().getId().equals(user.getId())){
             log.warn("Unauthorized update attempt by user: {}",email);
-            throw new RuntimeException("You are not allowed to update this expense");
+            throw new ETMException(ETMConstantMessages.NOT_ALLOWED_TO_UPDATE_CODE,ETMConstantMessages.NOT_ALLOWED_TO_UPDATE);
         }
 
         expense.setTitle(request.getTitle());
@@ -91,11 +91,11 @@ public class ExpenseServiceImpl implements ExpenseService {
         User user = getUserByEmail(email);
 
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(()->new ExpenseNotFoundException("Expense not found."));
+                .orElseThrow(()->new ETMException(ETMConstantMessages.EXPENSE_NOT_FOUND_CODE,ETMConstantMessages.EXPENSE_NOT_FOUND));
 
         if (!expense.getUser().getId().equals(user.getId())){
             log.warn("Unauthorized delete attempt by user: {}",email);
-            throw new RuntimeException("Not allowed");
+            throw new ETMException(ETMConstantMessages.UNAUTHORIZED_CODE,ETMConstantMessages.UNAUTHORIZED);
         }
         expenseRepository.delete(expense);
     }

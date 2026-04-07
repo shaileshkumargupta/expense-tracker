@@ -1,6 +1,6 @@
 package com.expense_tracker.controller.budget;
 
-import com.expense_tracker.dto.Response;
+import com.expense_tracker.dto.common.Response;
 import com.expense_tracker.dto.budget.BudgetRequest;
 import com.expense_tracker.dto.budget.BudgetResponse;
 import com.expense_tracker.dto.budget.BudgetSummaryResponse;

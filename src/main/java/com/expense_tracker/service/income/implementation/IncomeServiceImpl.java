@@ -4,12 +4,10 @@ import com.expense_tracker.dto.income.IncomeRequest;
 import com.expense_tracker.dto.income.IncomeResponse;
 import com.expense_tracker.dto.income.IncomeSummaryResponse;
 import com.expense_tracker.dto.income.UpdateIncomeRequest;
-import com.expense_tracker.entity.expense.Expense;
 import com.expense_tracker.entity.income.Income;
 import com.expense_tracker.entity.user.User;
-import com.expense_tracker.exception.ExpenseNotFoundException;
-import com.expense_tracker.exception.IncomeNotFoundException;
-import com.expense_tracker.exception.UserNotFoundException;
+import com.expense_tracker.exception.ETMConstantMessages;
+import com.expense_tracker.exception.ETMException;
 import com.expense_tracker.repository.income.IncomeRepository;
 import com.expense_tracker.repository.user.UserRepository;
 import com.expense_tracker.service.income.IncomeService;
@@ -18,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +32,7 @@ public class IncomeServiceImpl implements IncomeService {
 
     private User getUserByEmail(String email){
         return userRepository.findByEmailId(email)
-                .orElseThrow(()-> new UserNotFoundException("User not found"));
+                .orElseThrow(()-> new ETMException(ETMConstantMessages.USER_NOT_FOUND_CODE,ETMConstantMessages.USER_NOT_FOUND));
     }
 
     @Override
@@ -74,11 +71,11 @@ public class IncomeServiceImpl implements IncomeService {
         User user = getUserByEmail(email);
 
         Income income = incomeRepository.findById(request.getId())
-                .orElseThrow(()-> new IncomeNotFoundException("Income not found"));
+                .orElseThrow(()-> new ETMException(ETMConstantMessages.INCOME_NOT_FOUND_CODE,ETMConstantMessages.INCOME_NOT_FOUND));
 
         if (!income.getUser().getId().equals(user.getId())){
             log.warn("Unauthorized update attempt by user: {}",email);
-            throw new RuntimeException("You are not allowed to update this income");
+            throw new ETMException(ETMConstantMessages.NOT_ALLOWED_TO_UPDATE_CODE,ETMConstantMessages.NOT_ALLOWED_TO_UPDATE);
         }
 
         income.setSource(request.getSource());
@@ -92,11 +89,11 @@ public class IncomeServiceImpl implements IncomeService {
         User user = getUserByEmail(email);
 
         Income income = incomeRepository.findById(id)
-                .orElseThrow(()->new IncomeNotFoundException("Income not found."));
+                .orElseThrow(()->new ETMException(ETMConstantMessages.INCOME_NOT_FOUND_CODE,ETMConstantMessages.INCOME_NOT_FOUND));
 
         if (!income.getUser().getId().equals(user.getId())){
             log.warn("Unauthorized delete attempt by user: {}",email);
-            throw new RuntimeException("Not allowed");
+            throw new ETMException(ETMConstantMessages.UNAUTHORIZED_CODE,ETMConstantMessages.UNAUTHORIZED);
         }
         incomeRepository.delete(income);
     }
