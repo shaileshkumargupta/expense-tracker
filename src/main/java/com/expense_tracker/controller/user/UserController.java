@@ -1,6 +1,6 @@
 package com.expense_tracker.controller.user;
 
-import com.expense_tracker.dto.Response;
+import com.expense_tracker.dto.common.Response;
 import com.expense_tracker.dto.user.LoginRequest;
 import com.expense_tracker.dto.user.RegisterUserRequest;
 import com.expense_tracker.dto.user.UserSummary;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 

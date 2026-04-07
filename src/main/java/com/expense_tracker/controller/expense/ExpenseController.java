@@ -1,12 +1,11 @@
 package com.expense_tracker.controller.expense;
 
 import com.expense_tracker.config.jwt.JwtUtil;
-import com.expense_tracker.dto.Response;
+import com.expense_tracker.dto.common.Response;
 import com.expense_tracker.dto.expense.ExpenseRequest;
 import com.expense_tracker.dto.expense.ExpenseResponse;
 import com.expense_tracker.dto.expense.ExpenseSummaryResponse;
 import com.expense_tracker.dto.expense.UpdateExpenseRequest;
-import com.expense_tracker.entity.expense.Expense;
 import com.expense_tracker.service.expense.ExpenseService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

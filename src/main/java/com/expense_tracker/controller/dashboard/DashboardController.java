@@ -1,6 +1,6 @@
 package com.expense_tracker.controller.dashboard;
 
-import com.expense_tracker.dto.Response;
+import com.expense_tracker.dto.common.Response;
 import com.expense_tracker.dto.dashboard.DashboardResponse;
 import com.expense_tracker.service.dashboard.DashboardService;
 import jakarta.validation.Valid;

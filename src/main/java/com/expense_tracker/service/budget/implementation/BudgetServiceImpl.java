@@ -6,8 +6,8 @@ import com.expense_tracker.dto.budget.BudgetSummaryResponse;
 import com.expense_tracker.entity.budget.Budget;
 import com.expense_tracker.entity.expense.Expense;
 import com.expense_tracker.entity.user.User;
-import com.expense_tracker.exception.BudgetNotFoundException;
-import com.expense_tracker.exception.UserNotFoundException;
+import com.expense_tracker.exception.ETMConstantMessages;
+import com.expense_tracker.exception.ETMException;
 import com.expense_tracker.repository.budget.BudgetRepository;
 import com.expense_tracker.repository.expense.ExpenseRepository;
 import com.expense_tracker.repository.user.UserRepository;
@@ -33,7 +33,7 @@ public class BudgetServiceImpl implements BudgetService {
 
     private User getUserByEmail(String email){
         return userRepository.findByEmailId(email)
-                .orElseThrow(()-> new UserNotFoundException("User not found"));
+                .orElseThrow(()-> new ETMException(ETMConstantMessages.USER_NOT_FOUND_CODE,ETMConstantMessages.USER_NOT_FOUND));
     }
 
 
@@ -57,7 +57,7 @@ public class BudgetServiceImpl implements BudgetService {
         User user = getUserByEmail(email);
 
         Budget budget = budgetRepository.findByUserAndMonthAndYear(user,month,year)
-                .orElseThrow(()-> new BudgetNotFoundException("Budget not found"));
+                .orElseThrow(()-> new ETMException(ETMConstantMessages.BUDGET_NOT_FOUND_CODE,ETMConstantMessages.BUDGET_NOT_FOUND));
 
         BudgetResponse res = new BudgetResponse();
         res.setAmount(budget.getAmount());
@@ -71,7 +71,7 @@ public class BudgetServiceImpl implements BudgetService {
         User user = getUserByEmail(email);
 
         Budget budget = budgetRepository.findByUserAndMonthAndYear(user,month,year)
-                .orElseThrow(()-> new BudgetNotFoundException("Budget not found"));
+                .orElseThrow(()-> new ETMException(ETMConstantMessages.BUDGET_NOT_FOUND_CODE,ETMConstantMessages.BUDGET_NOT_FOUND));
 
         List<Expense> expenses = expenseRepository.findByUser(user);
 

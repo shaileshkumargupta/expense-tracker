@@ -6,7 +6,8 @@ import com.expense_tracker.entity.budget.Budget;
 import com.expense_tracker.entity.expense.Expense;
 import com.expense_tracker.entity.income.Income;
 import com.expense_tracker.entity.user.User;
-import com.expense_tracker.exception.UserNotFoundException;
+import com.expense_tracker.exception.ETMConstantMessages;
+import com.expense_tracker.exception.ETMException;
 import com.expense_tracker.repository.budget.BudgetRepository;
 import com.expense_tracker.repository.expense.ExpenseRepository;
 import com.expense_tracker.repository.income.IncomeRepository;
@@ -37,7 +38,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     private User getUserByEmail(String email){
         return userRepository.findByEmailId(email)
-                .orElseThrow(()-> new UserNotFoundException("User not found"));
+                .orElseThrow(()-> new ETMException(ETMConstantMessages.USER_NOT_FOUND_CODE,ETMConstantMessages.USER_NOT_FOUND));
     }
 
     @Override
