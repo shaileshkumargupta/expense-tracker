@@ -13,6 +13,7 @@ import com.expense_tracker.repository.user.UserRepository;
 import com.expense_tracker.service.income.IncomeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -36,6 +37,7 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
+    @CacheEvict(value = {"monthlyReports", "dashboardData"}, allEntries = true)
     public void addIncome(IncomeRequest request, String email) {
         User user = getUserByEmail(email);
 
@@ -47,6 +49,7 @@ public class IncomeServiceImpl implements IncomeService {
         income.setUser(user);
 
         incomeRepository.save(income);
+        log.info("Saved income and evicted monthlyReports and dashboardData caches for user: {}", email);
     }
 
     @Override
@@ -67,6 +70,7 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
+    @CacheEvict(value = {"monthlyReports", "dashboardData"}, allEntries = true)
     public void updateIncome(UpdateIncomeRequest request, String email) {
         User user = getUserByEmail(email);
 
@@ -82,9 +86,11 @@ public class IncomeServiceImpl implements IncomeService {
         income.setAmount(request.getAmount());
         income.setDescription(request.getDescription());
         incomeRepository.save(income);
+        log.info("Updated income id: {} and evicted caches for user: {}", request.getId(), email);
     }
 
     @Override
+    @CacheEvict(value = {"monthlyReports", "dashboardData"}, allEntries = true)
     public void deleteIncome(Long id, String email) {
         User user = getUserByEmail(email);
 
@@ -96,6 +102,7 @@ public class IncomeServiceImpl implements IncomeService {
             throw new ETMException(ETMConstantMessages.UNAUTHORIZED_CODE,ETMConstantMessages.UNAUTHORIZED);
         }
         incomeRepository.delete(income);
+        log.info("Deleted income id: {} and evicted caches for user: {}", id, email);
     }
 
     @Override

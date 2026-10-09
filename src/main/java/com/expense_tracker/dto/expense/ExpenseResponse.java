@@ -10,6 +10,6 @@ public class ExpenseResponse {
     private String title;
     private Double amount;
     private String category;
-    private LocalDateTime dateTime;
+    private String dateTime;
     private String description;
 }

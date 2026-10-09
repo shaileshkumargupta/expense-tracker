@@ -7,6 +7,9 @@ import com.expense_tracker.dto.expense.ExpenseResponse;
 import com.expense_tracker.dto.expense.ExpenseSummaryResponse;
 import com.expense_tracker.dto.expense.UpdateExpenseRequest;
 import com.expense_tracker.service.expense.ExpenseService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +22,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/expenses")
+@Tag(name = "Expense Management", description = "Operations for tracking and managing user expenses")
+@SecurityRequirement(name = "BearerAuth")
 public class ExpenseController {
 
     private final static Logger log = LoggerFactory.getLogger(ExpenseController.class);
@@ -30,6 +35,7 @@ public class ExpenseController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/add")
+    @Operation(summary = "Record a new expense", description = "Records an expense entry under a specific category for the authenticated user.")
     public Response addExpense(@Valid @RequestBody ExpenseRequest request, Authentication authentication){
         String email = authentication.getName();
         log.info("Add expense request for user:{}",email);
@@ -42,6 +48,7 @@ public class ExpenseController {
     }
 
     @GetMapping("/all")
+    @Operation(summary = "Get all expenses", description = "Fetches complete list of recorded expenses for the authenticated user.")
     public Response getExpenses(Authentication authentication){
         String email = authentication.getName();
         log.info("All expense request for user: {}",email);
@@ -54,7 +61,8 @@ public class ExpenseController {
     }
 
     @PutMapping("/update")
-    public Response updateExpense(@Valid @RequestBody UpdateExpenseRequest request,Authentication authentication){
+    @Operation(summary = "Update an existing expense", description = "Updates details of a previously recorded expense item.")
+    public Response updateExpense(@Valid @RequestBody UpdateExpenseRequest request, Authentication authentication){
         log.info("Update expense request: {}",request);
         String email = authentication.getName();
 
@@ -66,6 +74,7 @@ public class ExpenseController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @Operation(summary = "Delete an expense", description = "Removes an expense record by its ID.")
     public Response deleteExpense(@PathVariable Long id, Authentication authentication){
         log.info("Delete expense request for id: {}",id);
 
@@ -79,6 +88,7 @@ public class ExpenseController {
     }
 
     @GetMapping("/expenseSummary")
+    @Operation(summary = "Get expense summary report", description = "Retrieves category-wise and total expenditure metrics.")
     public Response getExpenseSummaryReport(Authentication authentication){
         String email = authentication.getName();
         log.info("Summary Report for user: {}",email);

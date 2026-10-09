@@ -4,6 +4,9 @@ import com.expense_tracker.dto.common.Response;
 import com.expense_tracker.dto.report.MonthlyReportResponse;
 import com.expense_tracker.exception.ETMException;
 import com.expense_tracker.service.report.ReportService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -18,11 +21,17 @@ import java.util.Map;
 @RequestMapping("/report")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Report Management", description = "Endpoints for generating financial and monthly reports")
+@SecurityRequirement(name = "BearerAuth")
 public class ReportController {
 
     private final ReportService reportService;
 
     @GetMapping("/monthly")
+    @Operation(
+            summary = "Get monthly financial report",
+            description = "Computes aggregated income, total expenditure, net savings, and category distribution for a specific month and year."
+    )
     public Response getMonthlyReport(@RequestParam int month, @RequestParam int year, Authentication authentication){
         String email = authentication.getName();
 

@@ -4,6 +4,20 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Environment & Secrets ###
+.env
+*.env
+*.local
+credentials.json
+
+### Logs ###
+*.log
+logs/
+
+### OS & Scratch Files ###
+.DS_Store
+Thumbs.db
+
 ### STS ###
 .apt_generated
 .classpath

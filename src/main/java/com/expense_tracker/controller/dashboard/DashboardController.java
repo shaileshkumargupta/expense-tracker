@@ -3,6 +3,9 @@ package com.expense_tracker.controller.dashboard;
 import com.expense_tracker.dto.common.Response;
 import com.expense_tracker.dto.dashboard.DashboardResponse;
 import com.expense_tracker.service.dashboard.DashboardService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +20,15 @@ import java.util.Map;
 @RestController
 @RequestMapping("/dashboard")
 @Slf4j
+@Tag(name = "Dashboard", description = "Operations for retrieving consolidated user financial metrics and budget progress")
+@SecurityRequirement(name = "BearerAuth")
 public class DashboardController {
 
     @Autowired
     private DashboardService dashboardService;
 
     @GetMapping("/getAllData")
+    @Operation(summary = "Get aggregated dashboard metrics", description = "Fetches total income, total expense, savings balance, budget status, and category breakdown.")
     public Response getDashBoard(@Valid @RequestParam Integer month, @RequestParam Integer year, Authentication authentication){
         String email = authentication.getName();
         log.info("Get all dashboard data request : {}",email +" month :"+month+", year :"+year);

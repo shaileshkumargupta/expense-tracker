@@ -11,6 +11,7 @@ import com.expense_tracker.repository.income.IncomeRepository;
 import com.expense_tracker.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +27,9 @@ public class ReportService {
     private final IncomeRepository incomeRepository;
     private final UserRepository userRepository;
 
+    @Cacheable(value = "monthlyReports", key = "#email + '-' + #year + '-' + #month")
     public MonthlyReportResponse getMonthlyReport(String email, int month, int year) {
+        log.info("Computing monthly report from database for user: {}, month: {}, year: {}", email, month, year);
         User user = userRepository.findByEmailId(email)
                 .orElseThrow(()-> new ETMException(ETMConstantMessages.USER_NOT_FOUND_CODE,ETMConstantMessages.USER_NOT_FOUND));
 
@@ -47,7 +50,6 @@ public class ReportService {
                         Expense::getCategory,
                         Collectors.summingDouble(Expense::getAmount)
                 ));
-
 
         MonthlyReportResponse response = new MonthlyReportResponse();
         response.setTotalIncome(totalIncome);
