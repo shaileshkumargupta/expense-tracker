@@ -1,0 +1,9 @@
+# Only declare these ONCE here
+type Query
+type Mutation
+
+# Shared across all domains
+type OperationResult {
+    status: String
+    message: String
+}

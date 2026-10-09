@@ -15,6 +15,7 @@ import com.expense_tracker.repository.user.UserRepository;
 import com.expense_tracker.service.dashboard.DashboardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -42,7 +43,9 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Cacheable(value = "dashboardData", key = "#email + '-' + #year + '-' + #month")
     public DashboardResponse getDashBoard(Integer month, Integer year, String email) {
+        log.info("Computing dashboard data from database for user: {}, month: {}, year: {}", email, month, year);
         User user = getUserByEmail(email);
 
         List<Expense> expenses = expenseRepository.findByUser(user);

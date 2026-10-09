@@ -13,6 +13,7 @@ import com.expense_tracker.repository.user.UserRepository;
 import com.expense_tracker.service.expense.ExpenseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    @CacheEvict(value = {"monthlyReports", "dashboardData"}, allEntries = true)
     public void addExpense(ExpenseRequest request, String email) {
         User user = getUserByEmail(email);
 
@@ -48,6 +50,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         expense.setUser(user);
 
         expenseRepository.save(expense);
+        log.info("Saved expense and evicted monthlyReports and dashboardData caches for user: {}", email);
     }
 
     @Override
@@ -61,13 +64,14 @@ public class ExpenseServiceImpl implements ExpenseService {
             response.setTitle(expense.getTitle());
             response.setAmount(expense.getAmount());
             response.setCategory(expense.getCategory());
-            response.setDateTime(expense.getDateTime());
+            response.setDateTime(expense.getDateTime() != null ? expense.getDateTime().toString() : null);
             response.setDescription(expense.getDescription());
             return response;
         }).toList();
     }
 
     @Override
+    @CacheEvict(value = {"monthlyReports", "dashboardData"}, allEntries = true)
     public void updateExpense(UpdateExpenseRequest request, String email) {
         User user = getUserByEmail(email);
 
@@ -84,9 +88,11 @@ public class ExpenseServiceImpl implements ExpenseService {
         expense.setCategory(request.getCategory());
         expense.setDescription(request.getDescription());
         expenseRepository.save(expense);
+        log.info("Updated expense id: {} and evicted caches for user: {}", request.getId(), email);
     }
 
     @Override
+    @CacheEvict(value = {"monthlyReports", "dashboardData"}, allEntries = true)
     public void deleteExpense(Long id, String email) {
         User user = getUserByEmail(email);
 
@@ -98,6 +104,7 @@ public class ExpenseServiceImpl implements ExpenseService {
             throw new ETMException(ETMConstantMessages.UNAUTHORIZED_CODE,ETMConstantMessages.UNAUTHORIZED);
         }
         expenseRepository.delete(expense);
+        log.info("Deleted expense id: {} and evicted caches for user: {}", id, email);
     }
 
     @Override
@@ -114,6 +121,12 @@ public class ExpenseServiceImpl implements ExpenseService {
             categoryMap.put(expense.getCategory(),
                     categoryMap.getOrDefault(expense.getCategory(),0.0)+expense.getAmount());
         }
+
+        List<ExpenseSummaryResponse.CategorySummary> categoryList = categoryMap.entrySet()
+                .stream()
+                .map(e-> new ExpenseSummaryResponse.CategorySummary(e.getKey(),e.getValue()))
+                .toList();
+
         ExpenseSummaryResponse response = new ExpenseSummaryResponse();
         response.setTotalAmount(totalAmount);
         response.setTotalTransaction(expenses.size());

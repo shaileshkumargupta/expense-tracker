@@ -1,0 +1,65 @@
+extend type Query {
+    getAllExpenses: ExpenseListResult
+    getExpenseSummary: SummaryResult
+    getExpenseByCategory(category: String!): ExpenseListResult
+}
+
+extend type Mutation {
+    addExpense(input: ExpenseInput): OperationResult
+    updateExpense(id: ID!,input: UpdateExpenseInput!): OperationResult
+    deleteExpense(id: ID!): OperationResult
+}
+
+type ExpenseData {
+    id: ID
+    title: String
+    amount: Float
+    category: String
+    dateTime: String
+    description: String
+    user: UserSummary
+}
+
+type UserSummary {
+    id: ID
+    name: String
+    email: String
+}
+
+type CategoryEntry {
+    category: String
+    amount: Float
+}
+
+type SummaryData {
+    totalAmount: Float
+    totalTransaction: Int
+    categorySummary: [CategoryEntry]
+}
+
+type ExpenseListResult {
+    status: String
+    message: String
+    expense: [ExpenseData]
+}
+
+type SummaryResult {
+    status: String
+    message: String
+    summary: SummaryData
+}
+
+input ExpenseInput {
+    title: String!
+    amount: Float!
+    category: String!
+    description: String
+}
+
+input UpdateExpenseInput {
+    id: ID!
+    title: String!
+    amount: Float!
+    category: String!
+    description: String
+}
