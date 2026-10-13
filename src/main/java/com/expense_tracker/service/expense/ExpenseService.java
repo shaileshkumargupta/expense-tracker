@@ -1,9 +1,6 @@
 package com.expense_tracker.service.expense;
 
-import com.expense_tracker.dto.expense.ExpenseRequest;
-import com.expense_tracker.dto.expense.ExpenseResponse;
-import com.expense_tracker.dto.expense.ExpenseSummaryResponse;
-import com.expense_tracker.dto.expense.UpdateExpenseRequest;
+import com.expense_tracker.dto.expense.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -15,7 +12,17 @@ public interface ExpenseService {
 
     void updateExpense(@Valid UpdateExpenseRequest request, String email);
 
+    ExpenseResponse updateExpenseById(Long id, @Valid ExpenseRequest request, String email);
+
     void deleteExpense(Long id, String email);
 
     ExpenseSummaryResponse getSummaryReport(String email);
+
+    int bulkDeleteExpenses(List<Long> expenseIds, String email);
+
+    int bulkCategorizeExpenses(List<Long> expenseIds, String category, String email);
+
+    RecurringExpensesSummaryResponse getRecurringExpenses(String email);
+
+    ExpenseResponse setRecurringStatus(Long id, SetRecurringRequest request, String email);
 }

@@ -8,4 +8,5 @@ public class UserSummary {
     private String name;
     private String email;
     private String mobileNumber;
+    private String currency;
 }

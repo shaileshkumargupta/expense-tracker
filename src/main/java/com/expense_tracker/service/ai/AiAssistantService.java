@@ -2,11 +2,14 @@ package com.expense_tracker.service.ai;
 
 import com.expense_tracker.dto.ai.AiChatResponse;
 import com.expense_tracker.dto.ai.ChatMessageDto;
+import com.expense_tracker.dto.ai.ReceiptScanResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -123,6 +126,120 @@ public class AiAssistantService {
                 .executedTools(executedTools)
                 .timestamp(LocalDateTime.now())
                 .build();
+    }
+
+    /**
+     * AI Receipt & Invoice OCR Scanner using Gemini Vision.
+     */
+    public ReceiptScanResponse scanReceipt(MultipartFile file, String base64Payload, String email) {
+        log.info("Scanning receipt for user: {}", email);
+
+        String base64Data;
+        String mimeType = "image/jpeg";
+
+        try {
+            if (file != null && !file.isEmpty()) {
+                mimeType = file.getContentType() != null ? file.getContentType() : "image/jpeg";
+                base64Data = Base64.getEncoder().encodeToString(file.getBytes());
+            } else if (base64Payload != null && !base64Payload.isBlank()) {
+                String cleanBase64 = base64Payload.trim();
+                if (cleanBase64.contains(",")) {
+                    // Extract MIME type if data URI scheme is present: data:image/png;base64,...
+                    String prefix = cleanBase64.substring(0, cleanBase64.indexOf(","));
+                    if (prefix.contains("image/png")) {
+                        mimeType = "image/png";
+                    } else if (prefix.contains("image/webp")) {
+                        mimeType = "image/webp";
+                    } else if (prefix.contains("image/heic")) {
+                        mimeType = "image/heic";
+                    } else if (prefix.contains("image/pdf") || prefix.contains("application/pdf")) {
+                        mimeType = "application/pdf";
+                    }
+                    cleanBase64 = cleanBase64.substring(cleanBase64.indexOf(",") + 1).trim();
+                }
+                base64Data = cleanBase64;
+            } else {
+                throw new IllegalArgumentException("No receipt image provided. Please upload a file or provide a base64 string.");
+            }
+        } catch (IOException e) {
+            log.error("Failed to read receipt file bytes: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to read uploaded receipt file: " + e.getMessage(), e);
+        }
+
+        String prompt = """
+                You are an expert receipt & invoice auditor. Analyze this receipt image and extract:
+                - title (Vendor name or primary purchase description)
+                - amount (Numeric total payment amount)
+                - category (Must match one of: Food, Dining Out, Groceries, Transportation, Housing, Utilities, Entertainment, Shopping, Healthcare, Travel, Education, Other)
+                - date (Receipt date in YYYY-MM-DD format, or today's date if missing)
+                - description (Brief breakdown of line items)
+                Return strictly valid JSON in this schema:
+                {"title":"...","amount":0.00,"category":"...","date":"...","description":"..."}
+                Do not include markdown code block formatting such as ```json or ```. Return only the raw JSON string.
+                """;
+
+        Map<String, Object> geminiVisionResponse = geminiClient.generateVisionContent(prompt, mimeType, base64Data);
+        String rawText = extractTextResponse(geminiVisionResponse);
+
+        if (rawText == null || rawText.isBlank()) {
+            throw new RuntimeException("Gemini Vision returned an empty scan response.");
+        }
+
+        return parseReceiptScanJson(rawText);
+    }
+
+    private ReceiptScanResponse parseReceiptScanJson(String rawText) {
+        try {
+            String sanitized = rawText.trim();
+            if (sanitized.startsWith("```json")) {
+                sanitized = sanitized.substring(7);
+            } else if (sanitized.startsWith("```")) {
+                sanitized = sanitized.substring(3);
+            }
+            if (sanitized.endsWith("```")) {
+                sanitized = sanitized.substring(0, sanitized.length() - 3);
+            }
+            sanitized = sanitized.trim();
+
+            return objectMapper.readValue(sanitized, ReceiptScanResponse.class);
+        } catch (Exception e) {
+            log.warn("Failed to parse Gemini receipt JSON directly. Attempting regex recovery from raw text: {}", rawText);
+            return recoverReceiptFieldsWithRegex(rawText);
+        }
+    }
+
+    private ReceiptScanResponse recoverReceiptFieldsWithRegex(String text) {
+        ReceiptScanResponse.ReceiptScanResponseBuilder builder = ReceiptScanResponse.builder();
+
+        // Extract title
+        Matcher titleMatcher = Pattern.compile("(?i)\"title\"\\s*:\\s*\"([^\"]+)\"").matcher(text);
+        builder.title(titleMatcher.find() ? titleMatcher.group(1) : "Scanned Receipt");
+
+        // Extract amount
+        Matcher amountMatcher = Pattern.compile("(?i)\"amount\"\\s*:\\s*([0-9]+(?:\\.[0-9]+)?)").matcher(text);
+        if (amountMatcher.find()) {
+            try {
+                builder.amount(Double.parseDouble(amountMatcher.group(1)));
+            } catch (NumberFormatException ignored) {
+                builder.amount(0.0);
+            }
+        } else {
+            builder.amount(0.0);
+        }
+
+        // Extract category
+        Matcher catMatcher = Pattern.compile("(?i)\"category\"\\s*:\\s*\"([^\"]+)\"").matcher(text);
+        builder.category(catMatcher.find() ? catMatcher.group(1) : "Other");
+
+        // Extract date
+        Matcher dateMatcher = Pattern.compile("(?i)\"date\"\\s*:\\s*\"([^\"]+)\"").matcher(text);
+        builder.date(dateMatcher.find() ? dateMatcher.group(1) : LocalDate.now().toString());
+
+        // Extract description
+        Matcher descMatcher = Pattern.compile("(?i)\"description\"\\s*:\\s*\"([^\"]+)\"").matcher(text);
+        builder.description(descMatcher.find() ? descMatcher.group(1) : "Receipt scanned successfully");
+
+        return builder.build();
     }
 
     private Map<String, Object> executeTool(String email, String toolName, Map<String, Object> args) {

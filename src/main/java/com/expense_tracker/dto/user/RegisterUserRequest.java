@@ -21,4 +21,6 @@ public class RegisterUserRequest {
     @Pattern(regexp = "^[0-9]{10}$",message = "Invalid mobile number")
     private String mobileNumber;
 
+    private String currency;
+
 }

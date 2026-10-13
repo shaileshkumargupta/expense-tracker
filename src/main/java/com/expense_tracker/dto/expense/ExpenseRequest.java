@@ -1,5 +1,6 @@
 package com.expense_tracker.dto.expense;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -20,4 +21,7 @@ public class ExpenseRequest {
 
     @Size(max = 255, message = "Description too long")
     private String description;
+
+    @JsonFormat(pattern = "yyyy-MM-dd[ HH:mm:ss][.SSSSSS]")
+    private String dateTime;
 }

@@ -2,7 +2,7 @@ package com.expense_tracker.dto.expense;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class ExpenseResponse {
@@ -12,4 +12,7 @@ public class ExpenseResponse {
     private String category;
     private String dateTime;
     private String description;
+    private Boolean isRecurring;
+    private String frequency;
+    private LocalDate nextDueDate;
 }
