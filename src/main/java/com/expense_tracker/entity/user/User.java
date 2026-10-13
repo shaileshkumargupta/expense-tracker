@@ -22,6 +22,10 @@ public class User {
     private String password;
     @Column(nullable = false)
     private String mobileNumber;
+
+    @Column(nullable = false, length = 10)
+    private String currency = "INR";
+
     @CreationTimestamp
     @Column(name = "created_at",updatable = false)
     private LocalDateTime createdAt;

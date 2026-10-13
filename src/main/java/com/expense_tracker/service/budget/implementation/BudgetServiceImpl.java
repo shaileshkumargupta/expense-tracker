@@ -14,6 +14,7 @@ import com.expense_tracker.repository.user.UserRepository;
 import com.expense_tracker.service.budget.BudgetService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class BudgetServiceImpl implements BudgetService {
 
 
     @Override
+    @CacheEvict(value = {"dashboardData", "monthlyReports"}, allEntries = true)
     public void setBudget(BudgetRequest request, String email) {
         User user = getUserByEmail(email);
 
@@ -50,6 +52,8 @@ public class BudgetServiceImpl implements BudgetService {
         budget.setYear(request.getYear());
         budget.setUser(user);
         budgetRepository.save(budget);
+        log.info("Saved/updated budget for {}/{} and evicted dashboardData and monthlyReports caches for user: {}",
+                request.getMonth(), request.getYear(), email);
     }
 
     @Override

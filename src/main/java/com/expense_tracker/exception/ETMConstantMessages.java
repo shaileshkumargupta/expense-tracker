@@ -10,6 +10,9 @@ public class ETMConstantMessages {
     public static final int EXPENSE_NOT_FOUND_CODE = 404;
     public static final String EXPENSE_NOT_FOUND = "Expense not found";
 
+    public static final int GOAL_NOT_FOUND_CODE = 404;
+    public static final String GOAL_NOT_FOUND = "Goal not found";
+
     public static final int INCOME_NOT_FOUND_CODE = 404;
     public static final String INCOME_NOT_FOUND = "Income not found";
 
@@ -27,6 +30,4 @@ public class ETMConstantMessages {
 
     public static final int UNAUTHORIZED_CODE = 403;
     public static final String UNAUTHORIZED = "Unauthorized access";
-
-
 }

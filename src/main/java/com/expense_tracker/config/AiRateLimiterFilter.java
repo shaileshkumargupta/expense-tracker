@@ -1,6 +1,5 @@
 package com.expense_tracker.config;
 
-import com.expense_tracker.dto.common.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.FilterChain;
@@ -19,7 +18,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -39,6 +39,9 @@ public class AiRateLimiterFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
         String path = request.getRequestURI();
         return !path.startsWith("/api/v1/ai");
     }
@@ -69,18 +72,19 @@ public class AiRateLimiterFilter extends OncePerRequestFilter {
                 log.warn("Rate limit exceeded for user: {}. Count: {}/{}", userIdentifier, requestCount, MAX_REQUESTS_PER_MINUTE);
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.setCharacterEncoding("UTF-8");
                 response.setHeader("Retry-After", "60");
+                response.setHeader("X-RateLimit-Limit", String.valueOf(MAX_REQUESTS_PER_MINUTE));
+                response.setHeader("X-RateLimit-Remaining", "0");
 
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .timeStamp(LocalDateTime.now())
-                        .status(HttpStatus.TOO_MANY_REQUESTS.value())
-                        .error("Too Many Requests")
-                        .message("Rate limit quota exceeded. Maximum " + MAX_REQUESTS_PER_MINUTE + " requests per minute allowed for AI Assistant.")
-                        .path(request.getRequestURI())
-                        .details(List.of("Free tier quota exceeded. Please wait 60 seconds before sending more AI requests."))
-                        .build();
+                Map<String, Object> errorPayload = new LinkedHashMap<>();
+                errorPayload.put("status", HttpStatus.TOO_MANY_REQUESTS.value());
+                errorPayload.put("error", "Too Many Requests");
+                errorPayload.put("message", "Rate limit exceeded. Try again in 60 seconds.");
+                errorPayload.put("path", request.getRequestURI());
+                errorPayload.put("timeStamp", LocalDateTime.now().toString());
 
-                response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+                response.getWriter().write(objectMapper.writeValueAsString(errorPayload));
                 return;
             }
         } catch (Exception e) {

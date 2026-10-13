@@ -3,7 +3,9 @@ package com.expense_tracker.controller.ai;
 import com.expense_tracker.dto.ai.AiChatRequest;
 import com.expense_tracker.dto.ai.AiChatResponse;
 import com.expense_tracker.dto.ai.ChatMessageDto;
+import com.expense_tracker.dto.ai.ReceiptScanResponse;
 import com.expense_tracker.dto.common.CommonResponse;
+import com.expense_tracker.dto.common.Response;
 import com.expense_tracker.service.ai.AiAssistantService;
 import com.expense_tracker.service.ai.ChatMemoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,11 +19,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/ai")
@@ -55,6 +60,50 @@ public class AiAssistantController {
 
         AiChatResponse response = aiAssistantService.chat(email, request.getMessage());
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(value = "/receipt-scan", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "AI Receipt & Invoice OCR Scanner (Multipart Upload)",
+            description = "Analyzes receipt/invoice images using Gemini Vision to extract title, amount, category, date, and description."
+    )
+    public Response scanReceiptMultipart(
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "imageBase64", required = false) String imageBase64,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+        log.info("Incoming receipt OCR scan request (multipart) from authenticated user: {}", email);
+
+        ReceiptScanResponse scanResult = aiAssistantService.scanReceipt(file, imageBase64, email);
+
+        Response response = new Response();
+        response.setSuccessResponse();
+        response.setResponse(Map.of("scanResult", scanResult));
+        log.info("Receipt OCR scan successfully completed for user: {}, merchant/title: {}", email, scanResult.getTitle());
+        return response;
+    }
+
+    @PostMapping(value = "/receipt-scan", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "AI Receipt & Invoice OCR Scanner (Base64 JSON)",
+            description = "Analyzes base64-encoded receipt/invoice images using Gemini Vision to extract title, amount, category, date, and description."
+    )
+    public Response scanReceiptJson(
+            @RequestBody Map<String, String> payload,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+        log.info("Incoming receipt OCR scan request (JSON base64) from authenticated user: {}", email);
+
+        String base64Image = payload.containsKey("imageBase64") ? payload.get("imageBase64") : payload.get("file");
+        ReceiptScanResponse scanResult = aiAssistantService.scanReceipt(null, base64Image, email);
+
+        Response response = new Response();
+        response.setSuccessResponse();
+        response.setResponse(Map.of("scanResult", scanResult));
+        log.info("Receipt OCR scan successfully completed for user: {}, merchant/title: {}", email, scanResult.getTitle());
+        return response;
     }
 
     @GetMapping("/history")
